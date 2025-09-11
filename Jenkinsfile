@@ -32,8 +32,10 @@ pipeline {
                     """
 
                     // Copy frontend build to Tomcat
+                    // Allow robocopy exit codes 0–3 as success
                     bat """
-                    robocopy "${frontendBuildDir}" "${tomcatWebappsDir}" /E /NFL /NDL /NJH /NJS /nc /ns /np
+                    robocopy "${frontendBuildDir}" "${tomcatWebappsDir}" /E /NFL /NDL /NJH /NJS /NC /NS /NP
+                    if %ERRORLEVEL% LEQ 3 (exit 0) else (exit %ERRORLEVEL%)
                     """
                 }
             }
