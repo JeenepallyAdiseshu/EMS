@@ -8,7 +8,7 @@ import com.example.demo.entity.Employee;
 import com.example.demo.service.EmployeeService;
 
 @RestController
-@RequestMapping("/api/employees")
+@RequestMapping("/employees")
 @CrossOrigin(origins = "*")
 public class EmployeeController {
 
