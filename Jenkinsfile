@@ -2,9 +2,10 @@ pipeline {
     agent any
 
     tools {
-        
-        maven 'MAVEN'   
-       
+        // Configure Maven in Jenkins → Manage Jenkins → Tools
+        maven 'MAVEN'   // The name must match your Maven installation in Jenkins
+        // Optional: configure NodeJS in Jenkins if needed
+        // nodejs 'NodeJS'
     }
 
     stages {
@@ -26,7 +27,7 @@ pipeline {
                     def frontendBuildDir = "${WORKSPACE}\\Frontend\\ems-frontend\\dist"
                     def tomcatWebappsDir = "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\ems-frontend"
 
-                    // Debug: check dist folder
+                    // Debug: list dist contents
                     bat "dir \"${frontendBuildDir}\" /b"
 
                     // Clean old deployment
@@ -37,8 +38,11 @@ pipeline {
                     mkdir "${tomcatWebappsDir}"
                     """
 
-                    // Copy new build files
-                    bat "robocopy \"${frontendBuildDir}\" \"${tomcatWebappsDir}\" /E /NFL /NDL /NJH /NJS /nc /ns /np"
+                    // Copy new build files (handle robocopy exit codes properly)
+                    bat """
+                    robocopy "${frontendBuildDir}" "${tomcatWebappsDir}" /E /NFL /NDL /NJH /NJS /nc /ns /np
+                    if %ERRORLEVEL% LSS 8 (exit /B 0) else (exit /B %ERRORLEVEL%)
+                    """
                 }
             }
         }
@@ -59,7 +63,7 @@ pipeline {
                     def backendWar = "${WORKSPACE}\\Backend\\SpringBootEmployeManagement\\target\\SpringBootEmployeManagement.war"
                     def tomcatWebappsDir = "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps"
 
-                    // Clean old WAR + exploded folder
+                    // Remove old WAR and exploded folder
                     bat """
                     if exist "${tomcatWebappsDir}\\SpringBootEmployeManagement.war" (
                         del /Q "${tomcatWebappsDir}\\SpringBootEmployeManagement.war"
