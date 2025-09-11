@@ -1,66 +1,76 @@
 pipeline {
     agent any
 
-    environment {
-        TOMCAT_PATH = "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps"
-        FRONTEND_PATH = "${WORKSPACE}\\Frontend\\ems-frontend"
+    tools {
+        
+        maven 'MAVEN'   
+       
     }
 
     stages {
 
-        stage('Checkout SCM') {
-            steps {
-                checkout scm
-            }
-        }
-
+        // ===== FRONTEND BUILD =====
         stage('Build Frontend') {
             steps {
-                dir("${FRONTEND_PATH}") {
+                dir('Frontend/ems-frontend') {
                     bat 'npm install'
                     bat 'npm run build'
                 }
             }
         }
 
+        // ===== FRONTEND DEPLOY =====
         stage('Deploy Frontend to Tomcat') {
             steps {
                 script {
-                    def targetPath = "${TOMCAT_PATH}\\ems-frontend"
-                    
-                    // Delete old folder if exists
+                    def frontendBuildDir = "${WORKSPACE}\\Frontend\\ems-frontend\\dist"
+                    def tomcatWebappsDir = "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\ems-frontend"
+
+                    // Debug: check dist folder
+                    bat "dir \"${frontendBuildDir}\" /b"
+
+                    // Clean old deployment
                     bat """
-                        if exist "${targetPath}" rmdir /S /Q "${targetPath}"
-                        mkdir "${targetPath}"
+                    if exist "${tomcatWebappsDir}" (
+                        rmdir /S /Q "${tomcatWebappsDir}"
+                    )
+                    mkdir "${tomcatWebappsDir}"
                     """
 
-                    // Copy dist folder, ignore robocopy exit codes
-                    def robocopyStatus = bat(
-                        script: """robocopy "${FRONTEND_PATH}\\dist" "${targetPath}" /E /NFL /NDL /NJH /NJS /nc /ns /np""",
-                        returnStatus: true
-                    )
-                    echo "Robocopy exit code: ${robocopyStatus} (non-zero may be OK)"
+                    // Copy new build files
+                    bat "robocopy \"${frontendBuildDir}\" \"${tomcatWebappsDir}\" /E /NFL /NDL /NJH /NJS /nc /ns /np"
                 }
             }
         }
 
+        // ===== BACKEND BUILD =====
         stage('Build Backend') {
             steps {
-                dir("${WORKSPACE}\\Backend") {
-                    bat 'mvn clean install'
+                dir('Backend/SpringBootEmployeManagement') {
+                    bat 'mvn clean package -DskipTests'
                 }
             }
         }
 
+        // ===== BACKEND DEPLOY =====
         stage('Deploy Backend to Tomcat') {
             steps {
                 script {
-                    def backendTarget = "${TOMCAT_PATH}\\ems-backend"
+                    def backendWar = "${WORKSPACE}\\Backend\\SpringBootEmployeManagement\\target\\SpringBootEmployeManagement.war"
+                    def tomcatWebappsDir = "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps"
+
+                    // Clean old WAR + exploded folder
                     bat """
-                        if exist "${backendTarget}" rmdir /S /Q "${backendTarget}"
-                        mkdir "${backendTarget}"
-                        copy /Y "${WORKSPACE}\\Backend\\target\\*.war" "${backendTarget}\\"
+                    if exist "${tomcatWebappsDir}\\SpringBootEmployeManagement.war" (
+                        del /Q "${tomcatWebappsDir}\\SpringBootEmployeManagement.war"
+                    )
+                    if exist "${tomcatWebappsDir}\\SpringBootEmployeManagement" (
+                        rmdir /S /Q "${tomcatWebappsDir}\\SpringBootEmployeManagement"
+                    )
                     """
+
+                    // Copy new WAR
+                    bat "copy \"${backendWar}\" \"${tomcatWebappsDir}\\\""
                 }
             }
         }
@@ -68,10 +78,10 @@ pipeline {
 
     post {
         success {
-            echo "Pipeline completed successfully!"
+            echo '✅ Deployment Successful!'
         }
         failure {
-            echo "Pipeline failed!"
+            echo '❌ Pipeline Failed.'
         }
     }
 }
