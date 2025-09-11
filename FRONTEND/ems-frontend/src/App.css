@@ -1,0 +1,105 @@
+/* General layout */
+.app-container {
+  background-color: #111;
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+/* Title */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 32px;
+  color: #00c3ff;
+}
+
+/* Form styling */
+.employee-form {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.employee-form input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #444;
+  background: #222;
+  color: white;
+}
+
+.employee-form input:focus {
+  outline: none;
+  border-color: #00c3ff;
+}
+
+.employee-form button {
+  background: #00c3ff;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.employee-form button:hover {
+  background: #0095cc;
+}
+
+/* Table styling */
+.employee-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  color: black;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.employee-table th,
+.employee-table td {
+  border: 1px solid #ddd;
+  padding: 12px;
+  text-align: center;
+}
+
+.employee-table th {
+  background: #00c3ff;
+  color: white;
+}
+
+.employee-table tr:nth-child(even) {
+  background: #f2f2f2;
+}
+
+/* Buttons */
+.edit-btn {
+  background: #007bff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.edit-btn:hover {
+  background: #0056b3;
+}
+
+.delete-btn {
+  background: #dc3545;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+}
+
+.delete-btn:hover {
+  background: #a71d2a;
+}
