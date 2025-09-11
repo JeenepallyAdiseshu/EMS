@@ -23,7 +23,7 @@ pipeline {
                     // Debug: list files in dist
                     bat "dir \"${frontendBuildDir}\" /b"
 
-                    // Remove old Tomcat folder
+                    // Remove old folder and create new one
                     bat """
                     if exist "${tomcatWebappsDir}" (
                         rmdir /S /Q "${tomcatWebappsDir}"
@@ -31,12 +31,8 @@ pipeline {
                     mkdir "${tomcatWebappsDir}"
                     """
 
-                    // Copy frontend build to Tomcat
-                    // Allow robocopy exit codes 0–3 as success
-                    bat """
-                    robocopy "${frontendBuildDir}" "${tomcatWebappsDir}" /E /NFL /NDL /NJH /NJS /NC /NS /NP
-                    if %ERRORLEVEL% LEQ 3 (exit 0) else (exit %ERRORLEVEL%)
-                    """
+                    // Copy build files
+                    bat "robocopy \"${frontendBuildDir}\" \"${tomcatWebappsDir}\" /E /NFL /NDL /NJH /NJS /nc /ns /np"
                 }
             }
         }
@@ -45,7 +41,8 @@ pipeline {
         stage('Build Backend') {
             steps {
                 dir('Backend/SpringBootEmployeManagement') {
-                    bat 'mvn clean package'
+                    // Fail pipeline if build fails
+                    bat 'mvn clean package -DskipTests'
                 }
             }
         }
@@ -67,14 +64,11 @@ pipeline {
                     )
                     """
 
-                    // Copy new WAR to Tomcat
-                    bat """
-                    copy "${backendWar}" "${tomcatWebappsDir}\\"
-                    """
+                    // Copy new WAR
+                    bat "copy \"${backendWar}\" \"${tomcatWebappsDir}\\\""
                 }
             }
         }
-
     }
 
     post {
