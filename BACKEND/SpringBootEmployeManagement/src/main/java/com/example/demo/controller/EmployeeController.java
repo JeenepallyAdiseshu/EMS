@@ -7,9 +7,9 @@ import java.util.List;
 import com.example.demo.entity.Employee;
 import com.example.demo.service.EmployeeService;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/employees")
+@CrossOrigin(origins = "*")
 public class EmployeeController {
 
     private final EmployeeService service;
