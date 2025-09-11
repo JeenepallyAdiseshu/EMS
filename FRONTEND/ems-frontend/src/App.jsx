@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
+import { ENDPOINTS } from "./config";
 
 function App() {
   const [employees, setEmployees] = useState([]);
@@ -19,7 +20,7 @@ function App() {
 
   const fetchEmployees = async () => {
     try {
-      const response = await axios.get("http://localhost:8080/api/employees");
+      const response = await axios.get(ENDPOINTS.employees);
       setEmployees(response.data);
     } catch (error) {
       console.error("Error fetching employees:", error);
@@ -39,14 +40,14 @@ function App() {
       if (editing) {
         // Update employee
         await axios.put(
-          `http://localhost:8080/api/employees/${formData.id}`,
+          ENDPOINTS.employeeById(formData.id),
           formData
         );
         setEditing(false);
       } else {
         // Add employee: remove 'id' before sending
         const { id, ...newEmployee } = formData;
-        await axios.post("http://localhost:8080/api/employees", newEmployee);
+        await axios.post(ENDPOINTS.employees, newEmployee);
       }
 
       setFormData({ id: "", firstName: "", lastName: "", email: "" });
@@ -65,7 +66,7 @@ function App() {
   // Delete Employee
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:8080/api/employees/${id}`);
+      await axios.delete(ENDPOINTS.employeeById(id));
       fetchEmployees();
     } catch (error) {
       console.error("Error deleting employee:", error);

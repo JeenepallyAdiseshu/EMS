@@ -7,7 +7,7 @@ import java.util.List;
 import com.example.demo.entity.Employee;
 import com.example.demo.service.EmployeeService;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/employees")
 public class EmployeeController {

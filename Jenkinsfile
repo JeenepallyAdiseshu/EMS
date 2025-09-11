@@ -1,19 +1,12 @@
 pipeline {
     agent any
 
-    tools {
-        // Configure Maven in Jenkins → Manage Jenkins → Tools
-        maven 'MAVEN'   // The name must match your Maven installation in Jenkins
-        // Optional: configure NodeJS in Jenkins if needed
-        // nodejs 'NodeJS'
-    }
-
     stages {
 
         // ===== FRONTEND BUILD =====
         stage('Build Frontend') {
             steps {
-                dir('Frontend/ems-frontend') {
+                dir('FRONTEND/ems-frontend') {
                     bat 'npm install'
                     bat 'npm run build'
                 }
@@ -23,35 +16,21 @@ pipeline {
         // ===== FRONTEND DEPLOY =====
         stage('Deploy Frontend to Tomcat') {
             steps {
-                script {
-                    def frontendBuildDir = "${WORKSPACE}\\Frontend\\ems-frontend\\dist"
-                    def tomcatWebappsDir = "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\ems-frontend"
-
-                    // Debug: list dist contents
-                    bat "dir \"${frontendBuildDir}\" /b"
-
-                    // Clean old deployment
-                    bat """
-                    if exist "${tomcatWebappsDir}" (
-                        rmdir /S /Q "${tomcatWebappsDir}"
-                    )
-                    mkdir "${tomcatWebappsDir}"
-                    """
-
-                    // Copy new build files (handle robocopy exit codes properly)
-                    bat """
-                    robocopy "${frontendBuildDir}" "${tomcatWebappsDir}" /E /NFL /NDL /NJH /NJS /nc /ns /np
-                    if %ERRORLEVEL% LSS 8 (exit /B 0) else (exit /B %ERRORLEVEL%)
-                    """
-                }
+                bat '''
+                if exist "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\ems-frontend" (
+                    rmdir /S /Q "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\ems-frontend"
+                )
+                mkdir "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\ems-frontend"
+                xcopy /E /I /Y FRONTEND\\ems-frontend\\dist\\* "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\ems-frontend"
+                '''
             }
         }
 
         // ===== BACKEND BUILD =====
         stage('Build Backend') {
             steps {
-                dir('Backend/SpringBootEmployeManagement') {
-                    bat 'mvn clean package -DskipTests'
+                dir('BACKEND/SpringBootEmployeManagement') {
+                    bat 'mvn clean package'
                 }
             }
         }
@@ -59,33 +38,26 @@ pipeline {
         // ===== BACKEND DEPLOY =====
         stage('Deploy Backend to Tomcat') {
             steps {
-                script {
-                    def backendWar = "${WORKSPACE}\\Backend\\SpringBootEmployeManagement\\target\\SpringBootEmployeManagement.war"
-                    def tomcatWebappsDir = "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps"
-
-                    // Remove old WAR and exploded folder
-                    bat """
-                    if exist "${tomcatWebappsDir}\\SpringBootEmployeManagement.war" (
-                        del /Q "${tomcatWebappsDir}\\SpringBootEmployeManagement.war"
-                    )
-                    if exist "${tomcatWebappsDir}\\SpringBootEmployeManagement" (
-                        rmdir /S /Q "${tomcatWebappsDir}\\SpringBootEmployeManagement"
-                    )
-                    """
-
-                    // Copy new WAR
-                    bat "copy \"${backendWar}\" \"${tomcatWebappsDir}\\\""
-                }
+                bat '''
+                if exist "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\SpringBootEmployeManagement.war" (
+                    del /Q "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\SpringBootEmployeManagement.war"
+                )
+                if exist "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\SpringBootEmployeManagement" (
+                    rmdir /S /Q "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\SpringBootEmployeManagement"
+                )
+                copy "BACKEND\\SpringBootEmployeManagement\\target\\*.war" "C:\\Program Files\\Apache Software Foundation\\Tomcat 10.1\\webapps\\"
+                '''
             }
         }
+
     }
 
     post {
         success {
-            echo '✅ Deployment Successful!'
+            echo 'Deployment Successful!'
         }
         failure {
-            echo '❌ Pipeline Failed.'
+            echo 'Pipeline Failed.'
         }
     }
 }

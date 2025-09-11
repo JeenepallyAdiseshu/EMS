@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { ENDPOINTS } from "../config";
 
 function EmployeeForm() {
-  const [employee, setEmployee] = useState({ name: "", role: "" });
+  const [employee, setEmployee] = useState({ firstName: "", lastName: "", email: "" });
   const { id } = useParams();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (id) {
-      axios.get(`http://localhost:8080/api/employees/${id}`)
+      axios.get(ENDPOINTS.employeeById(id))
         .then(res => setEmployee(res.data))
         .catch(err => console.error(err));
     }
@@ -22,11 +23,11 @@ function EmployeeForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (id) {
-      axios.put(`http://localhost:8080/api/employees/${id}`, employee)
+      axios.put(ENDPOINTS.employeeById(id), employee)
         .then(() => navigate("/"))
         .catch(err => console.error(err));
     } else {
-      axios.post("http://localhost:8080/api/employees", employee)
+      axios.post(ENDPOINTS.employees, employee)
         .then(() => navigate("/"))
         .catch(err => console.error(err));
     }
@@ -37,20 +38,29 @@ function EmployeeForm() {
       <h2>{id ? "Edit Employee" : "Add Employee"}</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label>Name: </label>
+          <label>First Name: </label>
           <input 
             type="text" 
-            name="name" 
-            value={employee.name} 
+            name="firstName" 
+            value={employee.firstName} 
             onChange={handleChange} 
             required />
         </div>
         <div>
-          <label>Role: </label>
+          <label>Last Name: </label>
           <input 
             type="text" 
-            name="role" 
-            value={employee.role} 
+            name="lastName" 
+            value={employee.lastName} 
+            onChange={handleChange} 
+            required />
+        </div>
+        <div>
+          <label>Email: </label>
+          <input 
+            type="email" 
+            name="email" 
+            value={employee.email} 
             onChange={handleChange} 
             required />
         </div>

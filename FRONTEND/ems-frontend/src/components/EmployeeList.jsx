@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { ENDPOINTS } from "../config";
 
 function EmployeeList() {
   const [employees, setEmployees] = useState([]);
 
   useEffect(() => {
-    axios.get("http://localhost:8080/api/employees")
+    axios.get(ENDPOINTS.employees)
       .then(res => setEmployees(res.data))
       .catch(err => console.error(err));
   }, []);
 
   const handleDelete = (id) => {
-    axios.delete(`http://localhost:8080/api/employees/${id}`)
+    axios.delete(ENDPOINTS.employeeById(id))
       .then(() => setEmployees(employees.filter(emp => emp.id !== id)))
       .catch(err => console.error(err));
   };
@@ -24,8 +25,9 @@ function EmployeeList() {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
-            <th>Role</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -33,8 +35,9 @@ function EmployeeList() {
           {employees.map(emp => (
             <tr key={emp.id}>
               <td>{emp.id}</td>
-              <td>{emp.name}</td>
-              <td>{emp.role}</td>
+              <td>{emp.firstName}</td>
+              <td>{emp.lastName}</td>
+              <td>{emp.email}</td>
               <td>
                 <Link to={`/edit/${emp.id}`} style={{ marginRight: "10px" }}>
                   Edit
